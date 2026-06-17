@@ -1,5 +1,16 @@
+# Rust
+/target
+
+# Environment / secrets
 .env
+
+# Logs
+/log
+log/application.log
+
+# Local DB artifacts
 ai_help_docs_backup.sql
 build_database.md
+
+# OS
 **/.DS_Store
-log/application.log
