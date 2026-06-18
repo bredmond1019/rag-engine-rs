@@ -47,14 +47,18 @@ impl ChatServer {
         }
     }
 
-    pub async fn process_message(
-        &mut self,
-        text: String,
+    /// Build a retrieval-augmented prompt for `text`: embed the query, find the
+    /// most relevant articles, and fold them into a grounded prompt. The caller
+    /// streams the LLM response from this prompt, so retrieval happens off the
+    /// actor thread (associated fn — takes the pool by `Arc`, not `&self`).
+    async fn build_rag_prompt(
+        db_pool: Arc<DbPool>,
+        text: &str,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
         let embedding_service = EmbeddingService::new();
-        let query_embedding = embedding_service.generate_embedding(&text).await?;
+        let query_embedding = embedding_service.generate_embedding(text).await?;
         let query_embedding = Vector::from(query_embedding);
-        let mut conn = self.db_pool.get()?;
+        let mut conn = db_pool.get()?;
         let relevant_articles =
             Article::find_relevant_articles(&query_embedding, &mut conn).await?;
 
@@ -74,21 +78,10 @@ impl ChatServer {
             .collect::<Vec<String>>()
             .join("\n\n");
 
-        let prompt = format!(
+        Ok(format!(
             "Based on the following context and the user's question, provide a helpful answer. Include references to the relevant articles.\n\nContext:\n{}\n\nUser Question: {}\n\nAnswer:",
             context, text
-        );
-
-        let response_stream = self.ai_service.generate_stream_response(prompt).await?;
-
-        // Collect the entire response
-        let full_response = response_stream
-            .map(|chunk| chunk.unwrap_or_default())
-            .collect::<Vec<String>>()
-            .await
-            .join("");
-
-        Ok(full_response)
+        ))
     }
 }
 
@@ -126,14 +119,30 @@ impl Handler<ClientMessage> for ChatServer {
         );
         let mut ai_service = self.ai_service.clone();
         let sessions = self.sessions.clone();
+        let db_pool = self.db_pool.clone();
         let id = client_message.session_id;
+        let user_message = client_message.message;
 
         Box::pin(async move {
+            // Retrieve relevant articles and build a grounded (RAG) prompt before
+            // streaming, so chat answers are anchored in the help docs.
+            let prompt = match ChatServer::build_rag_prompt(db_pool, &user_message).await {
+                Ok(prompt) => prompt,
+                Err(e) => {
+                    error!("Failed to build RAG prompt for session {:?}: {}", id, e);
+                    if let Some(addr) = sessions.get(&id) {
+                        addr.do_send(Message::new(
+                            "Sorry, I couldn't process your request. Please try again."
+                                .to_string(),
+                            true,
+                        ));
+                    }
+                    return;
+                }
+            };
+
             info!("Generating AI response for session {:?}", id);
-            match ai_service
-                .generate_stream_response(client_message.message)
-                .await
-            {
+            match ai_service.generate_stream_response(prompt).await {
                 Ok(stream) => {
                     info!("AI response stream generated for session {:?}", id);
                     let addr = sessions.get(&id).cloned();

@@ -20,6 +20,7 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(search::search);
     cfg.service(ai_generation::metadata_generation);
     cfg.service(ai_generation::failed_articles_metadata_generation);
+    cfg.route("/ws", web::get().to(ws::chat_route));
 }
 
 #[get("/")]

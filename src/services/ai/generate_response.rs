@@ -1,5 +1,5 @@
 use futures::stream::Stream;
-use log::{error, info};
+use log::{debug, error, info};
 use ollama_rs::generation::{
     chat::{request::ChatMessageRequest, ChatMessage, ChatMessageResponseStream},
     completion::request::GenerationRequest,
@@ -17,7 +17,8 @@ impl AIService {
         Pin<Box<dyn Stream<Item = Result<String, Box<dyn std::error::Error>>> + Send>>,
         Box<dyn std::error::Error + Send + Sync>,
     > {
-        info!("Generating AI response for input: {}", input);
+        info!("Generating streaming AI response ({} chars of input)", input.len());
+        debug!("AI response input: {}", input);
         let stream: ChatMessageResponseStream = self
             .ollama
             .send_chat_messages_with_history_stream(
@@ -38,7 +39,7 @@ impl AIService {
         Ok(Box::pin(stream.map(|res| match res {
             Ok(chunk) => {
                 if let Some(assistant_message) = chunk.message {
-                    info!("Received chunk of AI response");
+                    debug!("Received chunk of AI response");
                     Ok(assistant_message.content)
                 } else {
                     Ok(String::new())

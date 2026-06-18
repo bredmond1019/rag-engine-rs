@@ -1,7 +1,7 @@
 // File: src/data_processing/fetcher.rs
 
 use anyhow::Result;
-use log::{error, info};
+use log::{debug, error, info};
 use reqwest;
 use serde_json::{from_value, Value};
 use std::{env, time::Duration};
@@ -21,8 +21,14 @@ pub struct ApiClient {
 
 impl ApiClient {
     pub fn new(base_url: Option<String>, api_key: Option<String>) -> Result<Self> {
+        // A 1s timeout was too brittle for the paginated external API. Default to
+        // 30s, overridable via API_TIMEOUT_SECS for slow/fast environments.
+        let timeout_secs = env::var("API_TIMEOUT_SECS")
+            .ok()
+            .and_then(|v| v.parse::<u64>().ok())
+            .unwrap_or(30);
         let client = reqwest::Client::builder()
-            .timeout(Duration::from_secs(1))
+            .timeout(Duration::from_secs(timeout_secs))
             .build()?;
         // Startup/config: fail fast with a message pointing at .env.example.
         let api_key = api_key.unwrap_or(
@@ -72,12 +78,8 @@ impl ApiClient {
     pub async fn get_list_collections(&self) -> Result<Vec<Collection>> {
         info!("Fetching collections from API");
         let data = self.get("/v1/collections").await?;
-        info!("API Response | List Collections: {:?}", data);
+        debug!("API Response | List Collections: {:?}", data);
         let collection_response: CollectionResponse = from_value(data)?;
-        info!(
-            "API Response | List Collections: {:?}",
-            collection_response.collections.items.len()
-        );
         let collection_data = collection_response.collections;
         info!("Found {:?} collections", collection_data.items.len());
 
@@ -91,7 +93,7 @@ impl ApiClient {
     pub async fn get_collection(&self, id: &str) -> Result<Collection> {
         let data = self.get(&format!("/v1/collections/{}", id)).await?;
         let collection_item: CollectionItem = from_value(data["collection"].clone())?;
-        info!("API Response | Get Collection: {:?}", collection_item.id);
+        debug!("API Response | Get Collection: {:?}", collection_item.id);
         parse_collection(&collection_item)
     }
 
@@ -101,37 +103,25 @@ impl ApiClient {
         let mut page = 1;
 
         loop {
-            info!("Fetching articles from page: {}", page);
             let endpoint = format!(
                 "/v1/collections/{}/articles?page={}",
                 helpscout_collection_id, page
             );
-            info!("Sending request to endpoint: {}", endpoint);
+            debug!("Fetching articles from endpoint: {}", endpoint);
             let data = self.get(&endpoint).await?;
-            info!("Received response for page: {}", page);
-            // info!("API Response | Get List Articles: {:?}", data);
-            info!("Attempting to deserialize API response");
             let api_response: ArticleResponse = match from_value(data.clone()) {
-                Ok(response) => {
-                    info!("Successfully deserialized API response");
-                    response
-                }
+                Ok(response) => response,
                 Err(e) => {
                     error!("Failed to deserialize API response: {:?}", e);
-                    // error!("Raw API response: {:?}", data);
                     return Err(anyhow::anyhow!("Failed to deserialize API response: {}", e));
                 }
             };
             let article_data = api_response.articles;
-            info!(
-                "Total pages: {}, Current page: {}",
-                article_data.pages, page
-            );
-
-            info!(
-                "Found {} articles on page {} for collection: {}",
+            debug!(
+                "Found {} articles on page {}/{} for collection: {}",
                 article_data.items.len(),
                 page,
+                article_data.pages,
                 collection.slug
             );
             articles_refs.extend(article_data.items);
@@ -150,9 +140,8 @@ impl ApiClient {
     pub async fn get_article(&self, id: &str, collection: &Collection) -> Result<Article> {
         let data = self.get(&format!("/v1/articles/{}", id)).await?;
         let api_response: ArticleFullResponse = from_value(data)?;
-        info!("API Response | Get Article: {:?}", api_response.article.id);
         let article = api_response.article;
-        info!(
+        debug!(
             "Found article: ID:{:?}, Title: {:?}",
             article.id, article.name
         );
