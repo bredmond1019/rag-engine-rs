@@ -1,14 +1,12 @@
 // File: src/models/embedding.rs
 
-
+use diesel::pg::PgConnection;
 use diesel::prelude::*;
+use pgvector::Vector as PgVector;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use pgvector::Vector as PgVector;
-use diesel::pg::PgConnection;
 
 use crate::schema::embeddings;
-
 
 #[derive(Insertable, Queryable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::embeddings)]
@@ -20,7 +18,11 @@ pub struct Embedding {
 
 impl Embedding {
     pub fn new(article_id: Uuid, embedding_vector: Vec<f32>) -> Self {
-        assert_eq!(embedding_vector.len(), 384, "Embedding vector must be 384 dimensions");
+        assert_eq!(
+            embedding_vector.len(),
+            384,
+            "Embedding vector must be 384 dimensions"
+        );
         let embedding = PgVector::from(embedding_vector);
         Self {
             id: Uuid::new_v4(),
@@ -31,14 +33,19 @@ impl Embedding {
 
     pub fn store(&self, conn: &mut PgConnection) -> Result<Self, diesel::result::Error> {
         let embedding: Self = diesel::insert_into(embeddings::table)
-        .values(self)
-        .get_result(conn)?;
+            .values(self)
+            .get_result(conn)?;
 
-        log::info!("Successfully stored embedding for article {}", self.article_id);
+        log::info!(
+            "Successfully stored embedding for article {}",
+            self.article_id
+        );
         Ok(embedding)
     }
 
-    pub fn get_failed_embeddings(conn: &mut PgConnection) -> Result<Vec<Embedding>, diesel::result::Error> {
+    pub fn get_failed_embeddings(
+        conn: &mut PgConnection,
+    ) -> Result<Vec<Embedding>, diesel::result::Error> {
         let failed_embeddings = embeddings::table
             .filter(embeddings::embedding_vector.is_null())
             .load::<Embedding>(conn)?;

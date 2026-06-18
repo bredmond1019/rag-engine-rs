@@ -12,6 +12,12 @@ pub struct EmbeddingService {
     client: Client,
 }
 
+impl Default for EmbeddingService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EmbeddingService {
     pub fn new() -> Self {
         Self {

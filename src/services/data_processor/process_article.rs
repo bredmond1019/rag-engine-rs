@@ -99,6 +99,7 @@ impl DataProcessor {
         Ok(ProcessResult::new(article.id))
     }
 
+    #[allow(clippy::type_complexity)]
     pub fn parse_llm_response(
         &self,
         response: &str,
@@ -184,7 +185,6 @@ impl DataProcessor {
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let file_name = format!("failed_metadata_updates_{}.txt", article_id);
         let mut file = OpenOptions::new()
-            .write(true)
             .create(true)
             .append(true)
             .open(file_name)?;

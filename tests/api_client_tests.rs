@@ -189,7 +189,10 @@ mod tests {
         let mut server = Server::new_async().await;
 
         let _m = server
-            .mock("GET", "/v1/collections/5214c77c45667acd25394b51/articles")
+            .mock(
+                "GET",
+                "/v1/collections/5214c77c45667acd25394b51/articles?page=1",
+            )
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(

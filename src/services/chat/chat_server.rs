@@ -5,7 +5,7 @@ use crate::{db::DbPool, models::message::Message};
 
 use actix::prelude::*;
 use futures::StreamExt;
-use log::{error, info};
+use log::{debug, error, info};
 use pgvector::Vector;
 use serde::Deserialize;
 use std::{collections::HashMap, sync::Arc};
@@ -113,7 +113,7 @@ impl Handler<ClientMessage> for ChatServer {
     type Result = ResponseFuture<()>;
 
     fn handle(&mut self, client_message: ClientMessage, _: &mut Context<Self>) -> Self::Result {
-        info!(
+        debug!(
             "Received message from session {:?}: {}",
             client_message.session_id, client_message.message
         );
@@ -132,8 +132,7 @@ impl Handler<ClientMessage> for ChatServer {
                     error!("Failed to build RAG prompt for session {:?}: {}", id, e);
                     if let Some(addr) = sessions.get(&id) {
                         addr.do_send(Message::new(
-                            "Sorry, I couldn't process your request. Please try again."
-                                .to_string(),
+                            "Sorry, I couldn't process your request. Please try again.".to_string(),
                             true,
                         ));
                     }

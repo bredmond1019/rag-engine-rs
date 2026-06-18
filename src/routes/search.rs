@@ -37,8 +37,7 @@ async fn search(
             // Step 3: Convert the results to the desired format
             let articles: Vec<ArticleResult> = article_contents
                 .into_iter()
-                .enumerate()
-                .map(|(_, article)| ArticleResult {
+                .map(|article| ArticleResult {
                     id: article.id,
                     title: article.title,
                     content: article

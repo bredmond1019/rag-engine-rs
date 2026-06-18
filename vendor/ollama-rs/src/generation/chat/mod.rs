@@ -1,5 +1,3 @@
-#[cfg(all(feature = "chat-history", feature = "stream"))]
-use async_stream::stream;
 use serde::{Deserialize, Serialize};
 
 use crate::Ollama;
@@ -203,7 +201,7 @@ impl Ollama {
                     std::sync::Arc::new(std::sync::RwLock::new(MessagesHistory::default()));
                 self.messages_history = Some(new_history);
                 self.messages_history.as_mut().unwrap()
-            },
+            }
         };
         // Clone the current chat messages to avoid borrowing issues
         // And not to add message to the history if the request fails

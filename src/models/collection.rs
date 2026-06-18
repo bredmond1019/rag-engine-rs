@@ -191,6 +191,7 @@ impl Collection {
         Ok(unique_results)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn update_metadata(
         &self,
         conn: &mut PgConnection,

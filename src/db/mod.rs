@@ -6,7 +6,6 @@ use diesel::r2d2::{self, ConnectionManager, Pool};
 use diesel::RunQueryDsl;
 use diesel::{sql_query, PgConnection};
 
-
 pub type DbPool = Pool<ConnectionManager<PgConnection>>;
 
 pub fn init_pool() -> DbPool {

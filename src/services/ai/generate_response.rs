@@ -17,7 +17,10 @@ impl AIService {
         Pin<Box<dyn Stream<Item = Result<String, Box<dyn std::error::Error>>> + Send>>,
         Box<dyn std::error::Error + Send + Sync>,
     > {
-        info!("Generating streaming AI response ({} chars of input)", input.len());
+        info!(
+            "Generating streaming AI response ({} chars of input)",
+            input.len()
+        );
         debug!("AI response input: {}", input);
         let stream: ChatMessageResponseStream = self
             .ollama

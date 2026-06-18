@@ -7,7 +7,6 @@ use backend::services::search::SearchService;
 use backend::services::{AIService, EmbeddingService, MetadataGenerator};
 use dotenv::dotenv;
 use log::{error, info};
-use log4rs;
 use std::env;
 use std::sync::Arc;
 

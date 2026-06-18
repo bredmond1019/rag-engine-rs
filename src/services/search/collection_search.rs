@@ -20,7 +20,7 @@ impl SearchService {
 
         let relevant_collection_ids: Vec<Uuid> = semantic_collection_results
             .iter()
-            .map(|(collection_id, _)| collection_id.clone())
+            .map(|(collection_id, _)| *collection_id)
             .collect();
 
         // Get articles from relevant collections

@@ -20,6 +20,12 @@ impl AIService {
     }
 }
 
+impl Default for AIService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug)]
 enum AIModelError {
     RequestError(String),

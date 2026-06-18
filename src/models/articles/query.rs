@@ -125,14 +125,13 @@ impl Article {
         // Add ordering
         query = query
             .order(
-                (diesel::dsl::sql::<Integer>(&format!(
-                    "{}",
-                    words
+                (diesel::dsl::sql::<Integer>(
+                    &words
                         .iter()
                         .map(|w| format!("CASE WHEN LOWER(title) LIKE '%{}%' THEN 1 ELSE 0 END", w))
                         .collect::<Vec<_>>()
-                        .join(" + ")
-                )))
+                        .join(" + "),
+                ))
                 .desc(),
             )
             .then_order_by(updated_at.desc());
@@ -176,7 +175,7 @@ fn combine_and_deduplicate_results(
         .collect();
 
     // Sort by distance (lower is better)
-    combined_results.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
+    combined_results.sort_by(|a, b| a.1.total_cmp(&b.1));
 
     // Take the top 5 unique results
     let mut unique_results = Vec::new();
