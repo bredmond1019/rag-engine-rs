@@ -10,7 +10,6 @@ use log::{error, info};
 use log4rs;
 use std::env;
 use std::sync::Arc;
-// use std::process::Command;
 
 use backend::db;
 use backend::db::DbPool;
@@ -31,13 +30,6 @@ async fn main() -> std::io::Result<()> {
     }
 
     info!("Starting application");
-
-    // Python Service for Embedding
-    // let mut python_service = Command::new("python")
-    //     .arg("python_services/embedding_service.py")
-    //     .spawn()
-    //     .expect("Failed to start Python service");
-    // info!("Python service started with PID: {:?}", python_service.id());
 
     let pool: DbPool = db::init_pool();
     let arc_pool = Arc::new(pool.clone());
@@ -92,9 +84,5 @@ async fn main() -> std::io::Result<()> {
     .bind("127.0.0.1:3000")?
     .run();
 
-    let server_result = server.await;
-
-    // python_service.kill().expect("Failed to stop Python service");
-
-    server_result
+    server.await
 }
