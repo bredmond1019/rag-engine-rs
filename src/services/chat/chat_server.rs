@@ -54,11 +54,9 @@ impl ChatServer {
         let embedding_service = EmbeddingService::new();
         let query_embedding = embedding_service.generate_embedding(&text).await?;
         let query_embedding = Vector::from(query_embedding);
-        let conn = &mut self
-            .db_pool
-            .get()
-            .expect("couldn't get db connection from pool");
-        let relevant_articles = Article::find_relevant_articles(&query_embedding, conn).await?;
+        let mut conn = self.db_pool.get()?;
+        let relevant_articles =
+            Article::find_relevant_articles(&query_embedding, &mut conn).await?;
 
         let context = relevant_articles
             .iter()

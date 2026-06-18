@@ -52,6 +52,7 @@ impl JobQueue {
     pub fn get_job_status(&self, job_id: Uuid) -> Option<JobStatus> {
         self.job_statuses
             .lock()
+            // safe: only errors if a holder panicked while holding the lock (poisoned).
             .expect("Failed to lock job statuses")
             .iter()
             .find(|job| job.id == job_id)
@@ -63,6 +64,7 @@ impl JobQueue {
         job_id: Uuid,
         status: JobStatus,
     ) {
+        // safe: only errors if a holder panicked while holding the lock (poisoned).
         let mut statuses = job_statuses.lock().expect("Failed to lock job statuses");
         if let Some(job) = statuses.iter_mut().find(|job| job.id == job_id) {
             job.status = status;

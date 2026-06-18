@@ -18,7 +18,8 @@ pub fn clean_html(html: &str) -> Result<String, HtmlConversionError> {
     let mut cleaned_html = html.to_string();
     let mut previous_html;
 
-    // Create selectors for elements we want to remove or modify
+    // Create selectors for elements we want to remove or modify.
+    // safe: these are hardcoded, valid CSS selectors — parsing cannot fail at runtime.
     let script_style_selector = Selector::parse("script, style").unwrap();
     let div_selector = Selector::parse("div").unwrap();
     let img_selector = Selector::parse("img").unwrap();

@@ -136,8 +136,7 @@ impl Article {
 
         let article: Self = diesel::insert_into(articles::table)
             .values(self)
-            .get_result(conn)
-            .expect("Error creating article");
+            .get_result(conn)?;
         log::info!(
             "Result: Article ID: {:?}, Article Title: {:?}",
             article.id,

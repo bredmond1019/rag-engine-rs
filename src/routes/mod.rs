@@ -65,7 +65,14 @@ pub async fn test_embed() -> impl Responder {
     match resp {
         Ok(resp) => {
             if resp.status().is_success() {
-                HttpResponse::Ok().body(resp.text().await.unwrap())
+                match resp.text().await {
+                    Ok(body) => HttpResponse::Ok().body(body),
+                    Err(e) => {
+                        log::error!("Failed to read embedding service response body: {}", e);
+                        HttpResponse::InternalServerError()
+                            .body("Failed to read embedding service response")
+                    }
+                }
             } else {
                 HttpResponse::InternalServerError().body("Test embed failed")
             }

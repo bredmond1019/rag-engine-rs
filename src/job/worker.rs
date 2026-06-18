@@ -31,10 +31,17 @@ impl JobQueue {
 
                     match job {
                         Some(job) => {
-                            let (job_id, result) = job
-                                .process(&data_processor, &job_queue)
-                                .await
-                                .expect("Failed to process job");
+                            let (job_id, result) =
+                                match job.process(&data_processor, &job_queue).await {
+                                    Ok(outcome) => outcome,
+                                    Err(e) => {
+                                        // Don't panic the worker loop on a job-processing
+                                        // error; log it and move on to the next job.
+                                        error!("Failed to process job: {}", e);
+                                        sleep(rate_limit).await;
+                                        continue;
+                                    }
+                                };
 
                             Self::update_job_status(&job_statuses, job_id, JobStatus::Running);
                             info!("Starting sync job: {}", job_id);

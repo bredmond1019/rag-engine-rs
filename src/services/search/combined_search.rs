@@ -13,8 +13,9 @@ impl SearchService {
             let pool = self.db_pool.clone();
             let query = query.clone();
             async move {
-                let mut conn = pool.get().expect("couldn't get db connection from pool");
+                let mut conn = pool.get()?;
                 Article::keyword_search(&mut conn, &query, None)
+                    .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)
             }
         });
 
@@ -23,7 +24,7 @@ impl SearchService {
             let embedding_service = self.embedding_service.clone();
             async move {
                 let query_embedding = embedding_service.generate_embedding(&query).await?;
-                let mut conn = pool.get().expect("couldn't get db connection from pool");
+                let mut conn = pool.get()?;
                 Article::find_relevant_articles(&query_embedding.into(), &mut conn).await
             }
         });
@@ -59,8 +60,8 @@ impl SearchService {
             }
         }
 
-        // Sort combined results
-        combined_results.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        // Sort combined results (total_cmp is NaN-safe; partial_cmp().unwrap() would panic on NaN).
+        combined_results.sort_by(|a, b| b.1.total_cmp(&a.1));
         combined_results.truncate(10); // Limit to top 10 results
 
         Ok(combined_results

@@ -52,7 +52,9 @@ impl MetadataGenerator {
                         article.title, article.id
                     );
 
-                    // Acquire semaphore permit
+                    // Acquire semaphore permit.
+                    // safe: the semaphore is owned by this function and never closed, so
+                    // acquire() cannot return an error here.
                     let _permit = sem.acquire().await.expect("Semaphore should not be closed");
 
                     info!(

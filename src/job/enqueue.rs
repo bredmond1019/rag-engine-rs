@@ -16,6 +16,7 @@ impl JobQueue {
         };
 
         {
+            // safe: only errors if a holder panicked while holding the lock (poisoned).
             let mut statuses = self
                 .job_statuses
                 .lock()

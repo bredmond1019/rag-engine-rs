@@ -24,9 +24,13 @@ impl ApiClient {
         let client = reqwest::Client::builder()
             .timeout(Duration::from_secs(1))
             .build()?;
-        let api_key = api_key.unwrap_or(env::var("API_KEY").expect("API_KEY must be set"));
-        let base_url =
-            base_url.unwrap_or(env::var("API_BASE_URL").expect("API_BASE_URL must be set"));
+        // Startup/config: fail fast with a message pointing at .env.example.
+        let api_key = api_key.unwrap_or(
+            env::var("API_KEY").expect("API_KEY must be set (see .env.example)"),
+        );
+        let base_url = base_url.unwrap_or(
+            env::var("API_BASE_URL").expect("API_BASE_URL must be set (see .env.example)"),
+        );
         Ok(Self {
             client,
             base_url,

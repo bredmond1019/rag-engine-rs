@@ -27,6 +27,8 @@ impl OllamaLoadBalancer {
         let thread_pool = ThreadPoolBuilder::new()
             .num_threads(total_threads)
             .build()
+            // safe: startup-only; building a Rayon pool only fails if the OS can't spawn
+            // threads, in which case the process can't usefully continue anyway.
             .expect("Failed to create thread pool");
 
         Self {

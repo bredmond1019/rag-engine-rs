@@ -14,11 +14,14 @@ pub fn init_pool() -> DbPool {
     let manager = ConnectionManager::<PgConnection>::new(database_url);
     r2d2::Pool::builder()
         .build(manager)
-        .expect("Failed to create pool.")
+        // Startup-only: fail fast if the DB is unreachable or DATABASE_URL is malformed.
+        .expect("Failed to create database connection pool; check DATABASE_URL and that Postgres is running")
 }
 
 pub fn get_database_url() -> String {
-    env::var("DATABASE_URL").expect("DATABASE_URL must be set")
+    // Startup-only: the service cannot run without a database.
+    env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set (see .env.example for the expected format)")
 }
 
 pub fn clear_all_tables(conn: &mut PgConnection) -> Result<(), diesel::result::Error> {
