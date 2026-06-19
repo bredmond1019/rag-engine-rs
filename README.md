@@ -1,4 +1,4 @@
-# HelpDocApp
+# Rag Engine RS
 
 An AI-powered help-documentation backend written in Rust. It ingests articles
 from a HelpScout-style API, converts them to Markdown, chunks and embeds them
@@ -108,7 +108,7 @@ accounting and failed-ID persistence for retry.
 
 ```bash
 git clone <repo-url>
-cd HelpDocApp
+cd rag-engine-rs
 cp .env.example .env
 # Edit .env — at minimum set DATABASE_URL, API_KEY, API_BASE_URL
 ```

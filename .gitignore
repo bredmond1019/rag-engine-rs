@@ -14,3 +14,7 @@ build_database.md
 
 # OS
 **/.DS_Store
+
+# Internal planning + agent tooling (kept locally only)
+planning/
+.claude/
