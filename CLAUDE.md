@@ -1,4 +1,4 @@
-# CLAUDE.md — HelpDocApp
+# CLAUDE.md — Rag Engine RS
 
 AI-assisted work guide for this repository.
 
@@ -99,7 +99,6 @@ vendor/
 
 migrations/        — Diesel SQL migrations (run with `diesel migration run`)
 python_services/   — Python embedding microservice (Flask or similar, port 8080)
-planning/          — project context, status, and per-phase docs
 ```
 
 ---
