@@ -1,5 +1,7 @@
 # Rag Engine RS
 
+> Part of the **Bastion** ecosystem — see the [bastion-os](https://github.com/bredmond1019/bastion-os) front door for the full architecture.
+
 An AI-powered help-documentation backend written in Rust. It ingests articles
 from a HelpScout-style API, converts them to Markdown, chunks and embeds them
 into PostgreSQL (via `pgvector`), and serves **hybrid semantic + keyword
