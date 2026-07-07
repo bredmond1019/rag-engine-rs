@@ -107,7 +107,7 @@ accounting and failed-ID persistence for retry.
 ### 1. Clone and configure
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/bredmond1019/rag-engine-rs
 cd rag-engine-rs
 cp .env.example .env
 # Edit .env — at minimum set DATABASE_URL, API_KEY, API_BASE_URL
