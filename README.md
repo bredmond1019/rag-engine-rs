@@ -174,6 +174,10 @@ internally via `new_default_with_history`. One borrow-checker fix was applied
 on top of the upstream 0.2.0 tag. See [`vendor/ollama-rs/VENDORED.md`](vendor/ollama-rs/VENDORED.md)
 for the full diff description.
 
+## Roadmap / Known limitations
+
+- **Failure Handling:** The metadata failure fallback currently writes a local file (`failed_metadata_updates_{id}.txt`). Swapping it for a distributed-safe DLQ (Redis/Postgres) is planned for cloud-native readiness.
+
 ---
 
 ## License
