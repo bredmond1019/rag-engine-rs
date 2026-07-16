@@ -2,6 +2,11 @@
 
 AI-assisted work guide for this repository.
 
+## Before you start
+
+- **Strategic context:** `planning/context.md` (read first) → `planning/status.md` (current state)
+- **Symlink warning:** the `planning/` directory is actually a local symlink pointing to the company brain repo's `_planning/` vault (e.g. `portfolio/_planning/rag-engine-rs/`). The brain repo is responsible for tracking all planning files under Git. Do not track `planning/` in this project's public Git repository (it is gitignored).
+
 ---
 
 ## What this project is
