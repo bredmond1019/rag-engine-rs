@@ -18,6 +18,7 @@ build_database.md
 # Internal planning + agent tooling (kept locally only)
 /planning
 .claude/
+/hooks
 *.sqlite
 *.db
 state.json
