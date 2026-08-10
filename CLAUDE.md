@@ -119,9 +119,11 @@ python_services/   — Python embedding microservice (Flask or similar, port 808
   add a new one.
 - **`vendor/ollama-rs`** is a pinned fork, not a copy of upstream. See
   `vendor/ollama-rs/VENDORED.md` before updating it.
-- **`src/utils/ollama_load_balancer.rs`** is intentionally not wired into
-  the service graph — it's a working feature shelved for hardware reasons.
-  Do not delete it.
+- **`src/utils/` (`ollama_load_balancer.rs`, `ai_data_service.rs`, `test_generator_balancer.rs`)
+  is not currently compiled at all** — `src/lib.rs` declares no `mod utils;`, so this isn't just
+  "unwired," it's outside the crate entirely (verified 2026-08-03; nothing under `src/`
+  references `utils::`). It's a working feature shelved for hardware reasons — re-add
+  `pub mod utils;` to `lib.rs` before relying on or extending it. Do not delete it.
 
 ---
 
@@ -168,3 +170,45 @@ python_services/   — Python embedding microservice (Flask or similar, port 808
   the repo root.
 - The job queue reads `JOB_QUEUE_WORKERS` and `JOB_QUEUE_RATE_LIMIT_MS` at
   startup. Defaults apply if unset (see `.env.example`).
+
+<!-- BEGIN:response-style -->
+## Response Style
+
+Optimize every reply for an operator scanning several concurrent agent sessions. Default to the
+shortest response that fully answers. Long prose is the failure mode, not thoroughness.
+
+**Shape**
+
+1. **First line = the outcome.** What happened, and did it work. No preamble, no restating the ask.
+2. **Then the specifics, if any** — bullets, one line each, max ~6. Facts, not narration.
+3. **Last line = the ask, if any** — one question the user can answer in a word.
+
+Ceiling for a normal turn: **~150 words / ~15 lines**. Only depth the user explicitly asked for
+(a review, a design rationale, a plan document) may exceed it.
+
+**Cut**
+
+- Reasoning narration — how you got there, what you considered, what you almost did. Report
+  conclusions; the transcript already holds the steps.
+- Justifying decisions that worked out. Explain only what was non-obvious or that the user may
+  want to reverse.
+- Unasked-for "what's next", roadmaps, option menus, and status recaps.
+- Tables or headings for fewer than ~4 rows/sections — a sentence or bullets is faster to read.
+- Self-assessment and stage direction: "the finding that reframes everything", "worth your
+  attention", "one thing I want to flag", praise, hedging, apology.
+- Re-explaining anything already in a file you just wrote. Link the path instead.
+
+**Keep — these earn their space**
+
+- Failures, blocks, and anything not matching what was asked: say it first, plainly, with the
+  real error text.
+- Assumptions the user might reject, and decisions that need their call.
+- Security, data-loss, or money implications.
+- Exact identifiers where they *are* the content: `src/serve/handlers/attention.rs:101`, a
+  version, an error code. Never a paragraph describing what a one-line reference would say.
+
+**Register**
+
+Plain English for status, decisions, and trade-offs. Technical depth only where it changes what
+the user does next. One idea per sentence; no stacked em-dash asides.
+<!-- END:response-style -->
